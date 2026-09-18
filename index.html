@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎大驾光临</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            /* 极简黑白灰：中性灰渐变背景（颜色未作任何改动） */
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+            background: linear-gradient(135deg, #fafafa 0%, #e0e0e0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            /* 极简风格：非常柔和的微弱阴影（颜色未作任何改动） */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+        .welcome {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        .sub {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 28px;
+        }
+        .label {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        /* 新增 WiFi 名称样式，与标签和密码保持一致的极简风格 */
+        .wifi-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            word-break: break-all;
+        }
+        .password {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: 4px;
+            margin-bottom: 28px;
+            word-break: break-all;
+        }
+        .copy-btn {
+            /* 极简黑白灰：深灰色/纯黑色按钮（颜色未作任何改动） */
+            background: #222222;
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 16px 40px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        }
+        /* 按压反馈 */
+        .copy-btn:active {
+            transform: scale(0.97);
+            background: #000000;
+        }
+        /* 复制成功状态：仅按钮变绿（颜色未作任何改动） */
+        .copy-btn.copied {
+            background: #22c55e;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+        }
+        .hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="welcome">👏 欢迎来到我家</div>
+        <div class="sub">招待不周，WIFI密码请自取，不用客气！</div>
+        
+        <!-- WiFi 名称展示区 -->
+        <div class="label"><span>📶</span> WiFi 名称</div>
+        <div class="wifi-name" id="wifiName"></div>
+
+        <div class="label"><span>🔑</span> WiFi 密码</div>
+        <div class="password" id="pwd"></div>
+        
+        <button class="copy-btn" id="copyBtn" onclick="copyPassword()">👆 点击此处复制密码</button>
+        <div class="hint" id="hint">点击按钮一键复制，亦可长按密码手动复制</div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 只需修改下面这两行，填入真实的 WiFi 名称和密码
+        // ==========================================
+        var WIFI_NAME = "华曦府7-703";
+        var WIFI_PASSWORD = "88888888";
+
+        // 页面加载时，自动填充 WiFi 名称和密码
+        document.getElementById("wifiName").textContent = WIFI_NAME;
+        document.getElementById("pwd").textContent = WIFI_PASSWORD;
+
+        function copyPassword() {
+            var btn = document.getElementById("copyBtn");
+            var hint = document.getElementById("hint");
+
+            // 优先使用现代剪贴板 API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(WIFI_PASSWORD).then(function() {
+                    showSuccess(btn, hint);
+                }).catch(function() {
+                    fallbackCopy(btn, hint);
+                });
+            } else {
+                fallbackCopy(btn, hint);
+            }
+        }
+
+        // 降级方案：针对部分微信内置浏览器不支持 navigator.clipboard 的情况
+        function fallbackCopy(btn, hint) {
+            var textArea = document.createElement("textarea");
+            textArea.value = WIFI_PASSWORD;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand("copy");
+                showSuccess(btn, hint);
+            } catch (e) {
+                hint.textContent = "复制失败，请长按密码手动复制";
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 按钮成功状态的统一处理
+        function showSuccess(btn, hint) {
+            btn.textContent = "✅ 复制成功！";
+            btn.classList.add("copied");
+            hint.textContent = "密码已复制到剪贴板，去设置里粘贴即可";
+            
+            // 3 秒后恢复原样
+            setTimeout(function() {
+                btn.textContent = "👆 点击此处复制密码";
+                btn.classList.remove("copied");
+                hint.textContent = "点击按钮一键复制，亦可长按密码手动复制";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
